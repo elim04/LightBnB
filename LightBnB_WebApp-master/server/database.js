@@ -1,15 +1,5 @@
-//connection to pg
-const { Pool } = require('pg');
 
-const pool = new Pool({
-  user: 'vagrant',
-  password: '123',
-  host: 'localhost',
-  database: 'lightbnb'
-});
-
-pool.connect();
-
+const db = require('./db/index')
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
 
@@ -22,7 +12,7 @@ const users = require('./json/users.json');
  */
 const getUserWithEmail = function(email) {
 
-  return pool.query(`SELECT * FROM users WHERE email = $1;`, [email])
+  return db.query(`SELECT * FROM users WHERE email = $1;`, [email])
     .then(data => data.rows[0])
     .catch(err => console.error('query error', err.stack));
  
@@ -36,7 +26,7 @@ exports.getUserWithEmail = getUserWithEmail;
  */
 const getUserWithId = function(id) {
 
-  return pool.query(`SELECT * FROM users WHERE id = $1;`, [id])
+  return db.query(`SELECT * FROM users WHERE id = $1;`, [id])
     .then(data => data.rows[0])
     .catch(err => console.error('query error', err.stack));
 
@@ -53,7 +43,7 @@ const addUser =  function(user) {
   const userName = user.name;
   const userPassword = user.password;
   const userEmail = user.email;
-  return pool.query(`INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *;`, [userName, userEmail, userPassword])
+  return db.query(`INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *;`, [userName, userEmail, userPassword])
     .then(data => data.rows[0])
     .catch(err => console.error('query error', err.stack));
 };
@@ -77,7 +67,7 @@ const getAllReservations = function(guest_id, limit = 10) {
   ORDER BY reservations.start_date
   LIMIT $2;`;
 
-  return pool.query(queryString, [guest_id, limit])
+  return db.query(queryString, [guest_id, limit])
     .then(data => data.rows)
     .catch(err => console.error('query error', err.stack));
 };
@@ -130,7 +120,7 @@ const getAllProperties = function(options, limit = 10) {
   LIMIT $${queryParams.length};
   `;
 
-  return pool.query(queryString, queryParams)
+  return db.query(queryString, queryParams)
     .then(data => data.rows)
     .catch(err => console.error('query error', err.stack));
 
@@ -149,7 +139,7 @@ const addProperty = function(property) {
 
   let values = [property.owner_id, property.title, property.description, property.thumbnail_photo_url, property.cover_photo_url, property.cost_per_night, property.parking_spaces, property.number_of_bathrooms, property.number_of_bedrooms, property.country, property.street, property.city, property.province, property.post_code];
 
-  return pool.query(queryString, values)
+  return db.query(queryString, values)
     .then(data => data.rows[0])
     .catch(err => console.log('query error', err.stack));
 
